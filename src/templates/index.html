@@ -3,10 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Healthy Habits App</title>
+    <title>Healthy Habits</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: center;
+        }
+        header {
+            background-color: #4caf50;
+            color: white;
+            padding: 2rem 0;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        header p {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        main {
+            padding: 2rem;
+        }
+        .buttons {
+            margin-top: 2rem;
+        }
+        .buttons a {
+            text-decoration: none;
+            padding: 0.8rem 2rem;
+            margin: 0 1rem;
+            color: white;
+            background-color: #4caf50;
+            border-radius: 5px;
+            font-size: 1rem;
+            display: inline-block;
+        }
+        .buttons a:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Healthy Habits App!</h1>
-    <p>Track and improve your habits for a better life.</p>
+    <header>
+        <h1>Welcome to Healthy Habits</h1>
+        <p>Your journey to a healthier lifestyle starts here.</p>
+    </header>
+    <main>
+        <p>Track your habits, set goals, and improve your health every day.</p>
+        <div class="buttons">
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+        </div>
+    </main>
 </body>
 </html>
