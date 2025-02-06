@@ -1,63 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Healthy Habits</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #333;
-            text-align: center;
-        }
-        header {
-            background-color: #4caf50;
-            color: white;
-            padding: 2rem 0;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2.5rem;
-        }
-        header p {
-            margin: 0;
-            font-size: 1.2rem;
-        }
-        main {
-            padding: 2rem;
-        }
-        .buttons {
-            margin-top: 2rem;
-        }
-        .buttons a {
-            text-decoration: none;
-            padding: 0.8rem 2rem;
-            margin: 0 1rem;
-            color: white;
-            background-color: #4caf50;
-            border-radius: 5px;
-            font-size: 1rem;
-            display: inline-block;
-        }
-        .buttons a:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Healthy Habits</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-image: url('/static/images/background.png'); /* Проверете пътя */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center top; /* Позиционира изображението по-надолу */
+  color: #333;
+  text-align: center;
+}
+
+.footer {
+      display: flex;
+      justify-content: center;/* Центриране хоризонтално */
+      align-items: center;
+      width: 97.5%;
+      padding: 20px;
+      position: fixed;
+      bottom: 0;
+      left: 100;
+    }
+    /* Стил за бутоните (правоъгълниците) */
+    .footer .box {
+        
+      /* Ако искаш фиксирана или минимална ширина, можеш да зададеш и това */
+      min-width: 170px;
+      margin: 0 11px;  /* Разстояние между бутоните */
+      text-align: center;
+      padding: 1.5rem 2rem;
+      height: 180px;
+      color: rgb(226, 247, 252);
+      background-color: #05787a;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .footer .box:hover {
+      background-color: #0ab0b3;
+    }
+
+    header {
+      background-color: #05787a;
+      color: white;
+      padding: 2.9rem 0;
+    }
+    header h1 {
+      position: absolute;
+      top: 15px;
+      left: 140px;
+      margin: 0;
+      font-size: 3rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+    }
+    header p {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    main {
+      padding: 1rem;
+      background-color: rgba(255, 255, 255, 0.8); /* светъл полупрозрачен фон за по-лесно четене */
+      margin: 20px;
+      border-radius: 1555px;
+      font-size: 1.3rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+    }
+    .buttons {
+      margin-top: 1rem;
+    }
+    .buttons a {
+      position: absolute;
+      top: 20px;   /* разстояние от горната част на родителя */
+      text-decoration: none;
+      padding: 0.8rem 2.3rem;
+      margin: 0 10rem;
+      color: rgb(56, 60, 61);
+      background-color: #c1e7df;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      display: inline-block;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+    }
+    .buttons a:hover {
+      background-color: #366156;
+      color: #ffffff;
+    }
+
+    .buttons a:nth-child(1) {
+  right: 140px; /* позициониране за първия бутон */
+}
+
+.buttons a:nth-child(2) {
+  right: -15px; /* позициониране за втория бутон */
+}
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to Healthy Habits</h1>
-        <p>Your journey to a healthier lifestyle starts here.</p>
-    </header>
-    <main>
-        <p>Track your habits, set goals, and improve your health every day.</p>
-        <div class="buttons">
-            <a href="/register">Register</a>
-            <a href="/login">Login</a>
-        </div>
-    </main>
+  <header>
+    <h1>Healthy Habits</h1>
+    <p></p>
+  </header>
+  <main>
+    <p>Track your habits, set goals, and improve your health every day.</p>
+    <div class="buttons">
+      <a href="/register">Sign up</a>
+      <a href="/login">Sign in</a>
+    </div>
+  </main>
+  <footer class="footer">
+    <a href="#" class="box">
+        <img src="/static/icons/pulseMy.png" alt="Heart rate" style="width: 170px; height: 170px;">
+    </a>
+    <a href="#" class="box">
+        <img src="/static/icons/stepsMy.png" alt="Steps" style="width: 155px; height: 190px;">
+    </a>
+    <a href="#" class="box">
+        <img src="/static/icons/stres.png" alt="Stress" style="width: 180px; height: 210px;">
+    </a>
+    <a href="#" class="box">
+        <img src="/static/icons/workouts.png" alt="Workouts" style="width: 155px; height: 190px;">
+    </a>
+    <a href="#" class="box">
+        <img src="/static/icons/sleepMy.png" alt="Sleep" style="width: 170px; height: 170px;">
+    </a>
+  </footer>
 </body>
 </html>

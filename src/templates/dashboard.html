@@ -1,28 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #333;
-        }
+
+        
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-image: url('/static/images/background_dashboard.png'); /* Проверете пътя */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center top; /* Позиционира изображението по-надолу */
+  color: #333;
+  text-align: center;
+}
+        .footer {
+      display: flex;
+      justify-content: center;/* Центриране хоризонтално */
+      align-items: center;
+      width: 97.5%;
+      padding: 20px;
+      position: fixed;
+      bottom: 0;
+      left: 100;
+    }
+    /* Стил за бутоните (правоъгълниците) */
+    .footer .box {
+        
+      /* Ако искаш фиксирана или минимална ширина, можеш да зададеш и това */
+      min-width: 170px;
+      margin: 0 11px;  /* Разстояние между бутоните */
+      text-align: center;
+      padding: 10rem 2rem;
+      height: 70px;
+      color: rgb(226, 247, 252);
+      background-color: #05787a;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .footer .box:hover {
+      background-color: #0ab0b3;
+    }
         header {
-            background-color: #4caf50;
+            background-color: #05787a;
             color: white;
             padding: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
         }
         header h1 {
             margin: 0;
             font-size: 1.8rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+        main h2 {
+            padding:0.4rem;
+            background-color: rgba(222, 83, 23, 0.8);
+            margin:0px;
+            border-radius: 1555px;
+            color: #ffffff;
+            font-size: 3rem;
+            font-family: 'Montserrat', sans-serif;
         }
         .profile-icon {
             display: flex;
@@ -44,6 +95,55 @@
             padding: 2rem;
             text-align: center;
         }
+        .health-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.health-button {
+  text-align: center;
+  text-decoration: none;
+  color: black;
+}
+
+.health-button img {
+  width: 50px;  /* Размер на иконата */
+  height: 50px;  /* Размер на иконата */
+  margin-bottom: 5px;
+}
+
+.health-button p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.health-button:hover {
+  opacity: 0.8;  /* Леко намаляване на яркостта при задържане */
+}
+
+.button-text {
+    position: absolute;
+    top: 60px;  /* Разстояние от горния ръб на изображението */
+    left: 50%;  /* Центриране по хоризонтала */
+    transform: translateX(-50%);  /* Центриране на текста */
+    color: rgb(255, 255, 255);  /* Цвят на текста */
+    font-size: 30px;  /* Размер на текста */
+    font-weight: bold;  /* Тегло на шрифта */
+    font-family: 'Montserrat', sans-serif;
+}
+
+.box {
+    display: inline-block;
+    position: relative;
+}
+
+.box:nth-child(5) .button-text {
+    top: 40px;  /* Позициониране на текста в първия бутон */
+}
+
+
+
     </style>
 </head>
 <body>
@@ -55,8 +155,8 @@
         </div>
     </header>
     <main>
-        <h2>User Dashboard</h2>
-        <p>Welcome to your personalized dashboard.</p>
+        <h2>See your records and get adviced</h2>
+        <p>.</p>
     </main>
 
     <script>
@@ -65,5 +165,28 @@
             // Можеш да добавиш меню или логика за пренасочване
         }
     </script>
+
+<footer class="footer">
+  <a href="{{ url_for('main.view_pulse_graph') }}" class="box">
+      <img src="/static/icons/pulseMy.png" alt="Heart rate" style="width: 170px; height: 170px;">
+      <span class="button-text">Pulse</span>
+  </a>
+  <a href="{{ url_for('main.view_steps_graph') }}" class="box">
+      <img src="/static/icons/stepsMy.png" alt="Steps" style="width: 155px; height: 190px;">
+      <span class="button-text">Steps</span>
+  </a>
+  <a href="#" class="box">
+      <img src="/static/icons/stres.png" alt="Stress" style="width: 180px; height: 210px;">
+      <span class="button-text">Stress</span>
+  </a>
+  <a href="#" class="box">
+      <img src="/static/icons/workouts.png" alt="Workouts" style="width: 155px; height: 190px;">
+      <span class="button-text">Workouts</span>
+  </a>
+  <a href="#" class="box">
+      <img src="/static/icons/sleepMy.png" alt="Sleep" style="width: 170px; height: 170px;">
+      <span class="button-text">Sleep records</span>
+  </a>
+</footer>
 </body>
 </html>

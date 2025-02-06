@@ -4,6 +4,7 @@ from src.models import User
 from werkzeug.security import generate_password_hash
 from src.utils import allowed_file, get_secure_filename
 import os
+import plotly.graph_objects as go
 
 # Създаване на Blueprint за организиране на маршрутите
 main = Blueprint("main", __name__)
@@ -186,3 +187,55 @@ def delete_profile():
         flash("Не сте логнати.", "danger")
         return redirect(url_for('main.login'))  # Пренасочваме към логин страницата, ако потребителят не е логнат
 
+@main.route("/view_steps_graph", methods=["GET"])
+def view_steps_graph():
+     # Примерни данни за стъпки за 24 часа
+    hours = list(range(24))  # Време (часове) от 0 до 23
+    steps = [5000, 5200, 5300, 5500, 5700, 5900, 6100, 6300, 6500, 6700, 6900, 7100, 7300, 7500, 7700, 7900, 8100, 8300, 8500, 8700, 8900, 9100, 9300, 9500]  # Примерни стъпки
+
+    # Създаване на интерактивна графика с Plotly
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(x=hours, y=steps, mode='lines+markers', name='Стъпки'))
+
+    fig.update_layout(
+        title='Графика на стъпки за 24 часа',
+        xaxis_title='Час',
+        yaxis_title='Стъпки',
+        xaxis=dict(tickmode='linear', tick0=0, dtick=1)
+    )
+
+    # Генериране на HTML за графиката
+    graph_html = fig.to_html(full_html=False)
+
+    return render_template('steps_graph.html', graph_html=graph_html)
+
+
+    
+@main.route("/view_pulse_graph", methods=["GET"])
+def view_pulse_graph():
+    time = [0, 1, 2, 3, 4, 5]
+    pulse = [72, 75, 78, 76, 80, 79]
+
+    # Създаване на интерактивна графика
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=time, y=pulse, mode='lines+markers', name='Пулс'))
+
+    fig.update_layout(
+        title='Графика на пулс',
+        xaxis_title='Време (мин)',
+        yaxis_title='Пулс (удари/минута)',
+    )
+
+    # Генериране на HTML за графиката
+    graph_html = fig.to_html(full_html=False)
+
+    return render_template('pulse_graph.html', graph_html=graph_html)
+
+@main.route("/view_sleep_graph", methods=["POST"])
+def view_sleep_graph():
+    pass
+
+@main.route("/give_advice", methods=["POST"])
+def give_advice():
+    pass
