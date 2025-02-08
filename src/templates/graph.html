@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pulse Chart</title>
+    <title>{{ name }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f8f9fa;
+            background-image: url('/static/images/background_dashboard.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center top;
+            color: #b05408;
             margin: 0;
             padding: 0;
+            font-size: 50px;  /* Размер на текста */
+            font-weight: bold;  /* Тегло на шрифта */
+            font-family: 'Montserrat', sans-serif;
         }
         h1 {
-            color: #333;
-            margin-top: 20px;
+            color: #b05408;
+            margin-top: 10px;
         }
         .chart-container {
             margin: 20px auto;
@@ -33,7 +40,7 @@
 </head>
 <body>
 
-    <h1>Heart Rate Over Time</h1>
+    <h1>{{ name }}</h1>
     <div>{{ graph_html | safe }}</div>
 
 </body>

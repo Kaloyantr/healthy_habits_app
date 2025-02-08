@@ -1,12 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from src import db
-from src.models import User
-from werkzeug.security import generate_password_hash
-from src.utils import allowed_file, get_secure_filename
 import os
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from src import db
+from src.models import User, Health
+from werkzeug.utils import secure_filename
+from src.utils import allowed_file
 import plotly.graph_objects as go
+from datetime import datetime
 
-# Създаване на Blueprint за организиране на маршрутите
 main = Blueprint("main", __name__)
 
 @main.route("/")
@@ -56,7 +56,7 @@ def login_action():
         session['id'] = user.id
         session['username'] = user.username
         session['firstname'] = user.firstname
-        return redirect(url_for('main.dashboard', username=username, token='123456'))
+        return redirect(url_for('main.startmenu', username=username, token='123456'))
     else:
         return redirect(url_for('main.login', message='Invalid username or password'))
 
@@ -65,6 +65,21 @@ def login():
     message = request.args.get('message', None)
     session['logged_in'] = True
     return render_template('login.html', title='Login', message=message)
+
+@main.route('/startmenu')
+def startmenu():
+    if 'id' not in session:
+        return redirect(url_for('main.login'))  # Пренасочва към логин страницата, ако потребителят не е логнат
+
+    user = User.query.filter_by(id=session['id']).first()
+    name = user.firstname
+    if user.profilepic and user.profilepic != "static/images/profile.jpg":
+        picadres = user.profilepic.replace('static/','')
+        #profilepic = url_for('static', profilepic = picadres)
+    else:
+        picadres = 'images/profile.jpg'
+    
+    return render_template('startmenu.html', name=name, profilepic=picadres)
 
 @main.route("/user_page")
 def user_page():
@@ -92,7 +107,7 @@ def dashboard():
     
     return render_template('dashboard.html', name=name, profilepic=picadres)
 
-@main.route('/dashboard/profile')
+@main.route('/profile')
 def profile():
     user = User.query.filter_by(username=session.get('username')).first()
     username = user.username
@@ -103,10 +118,6 @@ def profile():
     else:
         picadres = "images/profile.jpg"
     return render_template('profile.html', username=username, email=email, profilepic=picadres)
-
-from flask import flash, redirect, render_template, request, url_for
-from werkzeug.utils import secure_filename
-import os
 
 @main.route('/editprofile', methods=['GET', 'POST'])
 def editprofile():
@@ -162,8 +173,6 @@ def editprofile():
     
     return render_template('editprofile.html', user=current_user)
 
-
-
 @main.route("/delete_profile", methods=["POST"])
 def delete_profile():
     if 'id' in session:
@@ -189,53 +198,177 @@ def delete_profile():
 
 @main.route("/view_steps_graph", methods=["GET"])
 def view_steps_graph():
-     # Примерни данни за стъпки за 24 часа
-    hours = list(range(24))  # Време (часове) от 0 до 23
-    steps = [5000, 5200, 5300, 5500, 5700, 5900, 6100, 6300, 6500, 6700, 6900, 7100, 7300, 7500, 7700, 7900, 8100, 8300, 8500, 8700, 8900, 9100, 9300, 9500]  # Примерни стъпки
+    dates_data = db.session.query(Health.date).all()
+    date_list = [row[0].date() for row in dates_data]
+    steps_data = db.session.query(Health.steps).all()
+    steps_list = [int(row[0]) for row in steps_data]
 
-    # Създаване на интерактивна графика с Plotly
     fig = go.Figure()
-
-    fig.add_trace(go.Scatter(x=hours, y=steps, mode='lines+markers', name='Стъпки'))
+    fig.add_trace(go.Scatter(x=date_list, y=steps_list, mode='lines+markers', name='Steps',line=dict(shape='hvh',color='#e8d0c1')))
 
     fig.update_layout(
-        title='Графика на стъпки за 24 часа',
-        xaxis_title='Час',
-        yaxis_title='Стъпки',
-        xaxis=dict(tickmode='linear', tick0=0, dtick=1)
+        #title=dict(text="Steps Over Time", font=dict(size=60, color='#b05408')),
+        xaxis_title='Time(d)',
+        yaxis_title='Steps',
+        plot_bgcolor='#27403a',
+        paper_bgcolor='rgba(176, 84, 8, 0)',
+        xaxis=dict(tickfont=dict(size = 15, color='#b05408')),
+        yaxis=dict(tickfont=dict(size = 15, color="#b05408"))
     )
 
     # Генериране на HTML за графиката
     graph_html = fig.to_html(full_html=False)
 
-    return render_template('steps_graph.html', graph_html=graph_html)
-
-
-    
+    return render_template('graph.html',name = "Steps", graph_html=graph_html)
+ 
 @main.route("/view_pulse_graph", methods=["GET"])
 def view_pulse_graph():
-    time = [0, 1, 2, 3, 4, 5]
-    pulse = [72, 75, 78, 76, 80, 79]
+    dates_data = db.session.query(Health.date).all()
+    date_list = [row[0].date() for row in dates_data]
+    pulse_data = db.session.query(Health.heartrate).all()
+    pulse_list = [int(row[0]) for row in pulse_data]
 
-    # Създаване на интерактивна графика
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=time, y=pulse, mode='lines+markers', name='Пулс'))
+    fig.add_trace(go.Scatter(x=date_list, y=pulse_list, mode='lines+markers', name='Heart rate'))
 
     fig.update_layout(
-        title='Графика на пулс',
-        xaxis_title='Време (мин)',
-        yaxis_title='Пулс (удари/минута)',
+        title='Heart Rate',
+        xaxis_title='Time(d)',
+        yaxis_title='Pulse(bpm)',
     )
 
     # Генериране на HTML за графиката
     graph_html = fig.to_html(full_html=False)
 
-    return render_template('pulse_graph.html', graph_html=graph_html)
+    return render_template('graph.html', name = 'Pulse', graph_html=graph_html)
 
-@main.route("/view_sleep_graph", methods=["POST"])
+@main.route("/view_stress_graph", methods=["GET"])
+def view_stress_graph():
+    dates_data = db.session.query(Health.date).all()
+    date_list = [row[0].date() for row in dates_data]
+    stress_data = db.session.query(Health.stress).all()
+    stress_list = [int(row[0]) for row in stress_data]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=date_list, y=stress_list, mode='lines+markers', name='Stress', line=dict(shape='hvh')))
+
+    fig.update_layout(
+        title='Stress',
+        xaxis_title='Time(d)',
+        yaxis_title='Stress',
+        plot_bgcolor='rgba(230, 230, 250, 0.8)',  # Светло лилав фон
+        paper_bgcolor='rgba(240, 248, 255, 0.9)',
+    )
+
+    # Генериране на HTML за графиката
+    graph_html = fig.to_html(full_html=False)
+
+    return render_template('graph.html', name = 'Stress levels', graph_html=graph_html)
+
+@main.route("/view_calories_graph", methods=["GET"])
+def view_calories_graph():
+    dates_data = db.session.query(Health.date).all()
+    date_list = [row[0].date() for row in dates_data]
+    calories_data = db.session.query(Health.calories).all()
+    calories_list = [int(row[0]) for row in calories_data]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=date_list, y=calories_list, mode='lines+markers', name='Heart rate', line=dict(shape='hvh')))
+
+    fig.update_layout(
+        title='Calories',
+        xaxis_title='Time(d)',
+        yaxis_title='Calories(cal)',
+    )
+
+    # Генериране на HTML за графиката
+    graph_html = fig.to_html(full_html=False)
+
+    return render_template('graph.html', name = 'Calories', graph_html=graph_html)
+
+@main.route("/view_sleep_graph", methods=["GET"])
 def view_sleep_graph():
-    pass
+    dates_data = db.session.query(Health.date).all()
+    date_list = [row[0].date() for row in dates_data]
+    sleep_data = db.session.query(Health.sleephours).all()
+    sleep_list = [int(row[0]) for row in sleep_data]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=date_list, y=sleep_list, mode='lines+markers', name='Sleep hours', line=dict(shape='hvh')))
+
+    fig.update_layout(
+        title='Sleep hours',
+        xaxis_title='Time(d)',
+        yaxis_title='Sleep(hours)',
+    )
+
+    # Генериране на HTML за графиката
+    graph_html = fig.to_html(full_html=False)
+
+    return render_template('graph.html', name = 'Sleep records', graph_html=graph_html)
 
 @main.route("/give_advice", methods=["POST"])
 def give_advice():
     pass
+
+@main.route('/upload', methods=['POST'])
+def upload_json():
+    import json
+
+    if 'jsonfile' not in request.files:
+        return {"error": "No file part"}, 400
+    
+    file = request.files['jsonfile']
+
+    db.session.query(Health).delete()
+
+    db.session.commit()
+
+    if file.filename == '':
+        return {"error": "No selected file"}, 400
+
+    try:
+        json_data = json.load(file)
+
+        activity = json_data.get("activity", {})
+        calories_data = activity.get("calories", [])
+        steps_data = activity.get("steps", [])
+
+        heart_rate_data = json_data.get("heartRate", [])
+
+        for entry in calories_data:
+            date = datetime.strptime(entry["date"], "%Y-%m-%d")
+            calories = entry["calories"]
+
+            steps = next((s["steps"] for s in steps_data if s["date"] == entry["date"]), 0)
+
+            hr_entry = next((h for h in heart_rate_data if h["date"] == entry["date"]), None)
+
+            if hr_entry:
+                avg_hr = hr_entry.get("average", 0.0)
+            else:
+                avg_hr = 0
+
+            health_record = Health(
+                userid=session['id'],
+                date=date,
+                steps=steps,
+                heartrate=avg_hr,
+                calories=calories
+            )
+
+            db.session.add(health_record)
+
+        db.session.commit()
+    
+        user = User.query.filter_by(id=session['id']).first()
+        name = user.firstname
+        if user.profilepic and user.profilepic != "static/images/profile.jpg":
+            picadres = user.profilepic.replace('static/','')
+        else:
+            picadres = 'images/profile.jpg'
+    
+        return render_template('dashboard.html', name=name, profilepic=picadres)
+
+    except Exception as e:
+        return jsonify({"error": f"Грешка: {str(e)}"}), 500
