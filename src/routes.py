@@ -6,6 +6,9 @@ from werkzeug.utils import secure_filename
 from src.utils import allowed_file
 import plotly.graph_objects as go
 from datetime import datetime
+from plyer import notification
+import bcrypt
+import json
 
 main = Blueprint("main", __name__)
 
@@ -17,33 +20,59 @@ def home():
 def register():
     return render_template('register.html')
 
+from sqlalchemy.exc import IntegrityError
+from flask import session, redirect, url_for, flash
+
 @main.route("/register_action", methods=['POST'])
 def register_action():
     if request.method == 'POST':
-
         if 'firstname' not in request.form or 'surname' not in request.form:
-            flash("Missing required fields.", "error")
+            session['message'] = {'text': "Missing required fields.", 'type': 'error'}
             return redirect(url_for('main.register'))
-        # Вземаме данните от формата
+
         username = request.form['username']
         email = request.form['email']
-        password = request.form['password']
+        password = request.form['password'].encode('utf-8')
         firstname = request.form['firstname']
         surname = request.form['surname']
         profilepic = "static/images/profile.jpg"
-
-        #hashed_password = generate_password_hash(password, method='sha256')
-
-        new_user = User(username=username, email=email, firstname=firstname, surname=surname, password=password, profilepic = profilepic)
         
-        db.session.add(new_user)
-        db.session.commit()
+        salt = bcrypt.gensalt()  # Генериране на сол
+        hashed_password = bcrypt.hashpw(password, salt)  # Хеширане на паролата
 
-        print(f"New user: {username}, {email}")
-        print("Registration successful!")
-        return redirect(url_for('main.login', message='Succesfull registration!'))
+        existing_user = db.session.query(User).filter((User.username == username) | (User.email == email)).first()
+        if existing_user:
+            if existing_user.username == username:
+                notification.notify(
+                title="Health Habits",
+                message="The username is taken.",
+                app_icon='sameName.ico',
+                timeout=5
+                )
+            elif existing_user.email == email:
+                notification.notify(
+                title="Health Habits",
+                message="The email is taken.",
+                app_icon='sameName.ico',
+                timeout=5
+                )
+            return redirect(url_for('main.register'))
+
+        new_user = User(username=username, email=email, firstname=firstname, surname=surname, password=hashed_password, profilepic=profilepic)
+
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            session['message'] = {'text': "Registration successful!", 'type': 'success'}
+            return redirect(url_for('main.login'))
+        except IntegrityError:
+            db.session.rollback()
+            session['message'] = {'text': "There was an error with the registration. Please try again.", 'type': 'error'}
+            return redirect(url_for('main.register'))
 
     return render_template('register.html')
+
+
 
 @main.route("/login_action", methods=['POST'])
 def login_action():
@@ -51,7 +80,7 @@ def login_action():
         return redirect(url_for('main.login', message='Invalid method'))
     user = User.query.filter_by(username=request.form['username']).first()
 
-    if user and request.form['password'] == user.password:
+    if user and bcrypt.checkpw(request.form['password'].encode('utf-8'), user.password):
         username = user.username
         session['id'] = user.id
         session['username'] = user.username
@@ -179,6 +208,10 @@ def delete_profile():
         username = session.get('username')
         current_user = User.query.filter_by(username=username).first()
         try:
+            user_id = session.get('id')
+            user_health_data = Health.query.filter_by(userid = user_id).all()
+            for data in user_health_data:
+                db.session.delete(data) 
             # Изтриваме потребителя от базата данни
             db.session.delete(current_user)
             db.session.commit()
@@ -198,9 +231,11 @@ def delete_profile():
 
 @main.route("/view_steps_graph", methods=["GET"])
 def view_steps_graph():
-    dates_data = db.session.query(Health.date).all()
+    specific_user_id = session('id')
+    
+    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    steps_data = db.session.query(Health.steps).all()
+    steps_data = db.session.query(Health.steps).filter(Health.user_id == specific_user_id).all()
     steps_list = [int(row[0]) for row in steps_data]
 
     fig = go.Figure()
@@ -220,12 +255,14 @@ def view_steps_graph():
     graph_html = fig.to_html(full_html=False)
 
     return render_template('graph.html',name = "Steps", graph_html=graph_html)
- 
+
 @main.route("/view_pulse_graph", methods=["GET"])
 def view_pulse_graph():
-    dates_data = db.session.query(Health.date).all()
+    specific_user_id = session('id')
+    
+    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    pulse_data = db.session.query(Health.heartrate).all()
+    pulse_data = db.session.query(Health.heartrate).filter(Health.user_id == specific_user_id).all()
     pulse_list = [int(row[0]) for row in pulse_data]
 
     fig = go.Figure()
@@ -244,9 +281,11 @@ def view_pulse_graph():
 
 @main.route("/view_stress_graph", methods=["GET"])
 def view_stress_graph():
-    dates_data = db.session.query(Health.date).all()
+    specific_user_id = session('id')
+    
+    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    stress_data = db.session.query(Health.stress).all()
+    stress_data = db.session.query(Health.stress).filter(Health.user_id == specific_user_id).all()
     stress_list = [int(row[0]) for row in stress_data]
 
     fig = go.Figure()
@@ -267,9 +306,11 @@ def view_stress_graph():
 
 @main.route("/view_calories_graph", methods=["GET"])
 def view_calories_graph():
-    dates_data = db.session.query(Health.date).all()
+    specific_user_id = session('id')
+    
+    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    calories_data = db.session.query(Health.calories).all()
+    calories_data = db.session.query(Health.calories).filter(Health.user_id == specific_user_id).all()
     calories_list = [int(row[0]) for row in calories_data]
 
     fig = go.Figure()
@@ -288,9 +329,10 @@ def view_calories_graph():
 
 @main.route("/view_sleep_graph", methods=["GET"])
 def view_sleep_graph():
-    dates_data = db.session.query(Health.date).all()
+    specific_user_id = session('id')
+    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    sleep_data = db.session.query(Health.sleephours).all()
+    sleep_data = db.session.query(Health.sleephours).filter(Health.user_id == specific_user_id).all()
     sleep_list = [int(row[0]) for row in sleep_data]
 
     fig = go.Figure()
@@ -307,23 +349,57 @@ def view_sleep_graph():
 
     return render_template('graph.html', name = 'Sleep records', graph_html=graph_html)
 
-@main.route("/give_advice", methods=["POST"])
+@main.route("/give_advice", methods=["GET"])
 def give_advice():
-    pass
+    user_id = session.get('id')  # Получаваме ID от сесията
+    
+    if not user_id:
+        return "Няма данни за потребителя", 400  # Ако няма потребител в сесията
+    
+    user = User.query.filter_by(id=user_id).first()
+
+    # Ако няма данни за потребителя
+    if not user:
+        return "Няма данни за потребителя", 400
+    
+    # Получаване на данни за стъпки и калории от базата
+    steps_data = db.session.query(Health.sleephours).filter(Health.userid == user_id).all()
+    steps_list = [row[0] for row in steps_data]  # Преобразуваме резултата в списък
+    av_steps = sum(steps_list) / len(steps_list) if len(steps_list) > 0 else 0  # Средна стойност за стъпките
+    
+    calories_data = db.session.query(Health.calories).filter(Health.userid == user_id).all()
+    calories_list = [row[0] for row in calories_data]  # Преобразуваме резултата в списък
+    av_cal = sum(calories_list) / len(calories_list) if len(calories_list) > 0 else 0  # Средна стойност за калориите
+    
+    weight = user.weight if user.weight else 72  # По подразбиране стойност
+    height = user.height if user.height else 1.75  # По подразбиране стойност
+    age = user.age if user.age else 25  # По подразбиране стойност
+    
+    A = (av_steps / 10000) + (av_cal / 2500)
+    BMI = weight / (height ** 2)
+    E = 100 / BMI
+    
+    health_score = (A + E) / 2
+    
+    if health_score > 80:
+        advice = "Вашето здраве е отлично! Продължавайте с активния начин на живот. Поддържайте стреса на ниско ниво и се опитайте да запазите здравословното си тегло."
+    elif 50 < health_score <= 80:
+        advice = "Здравето ви е добро, но има място за подобрения. Помислете за увеличаване на физическата активност, намаляване на стреса и подобряване на съня."
+    else:
+        advice = "Вашето здравословно състояние не е на ниво, което бихте искали. Препоръчваме ви да се консултирате с лекар за съвети, да започнете с по-здравословен начин на живот, да намалите стреса и да увеличите физическата активност."
+    
+    return redirect(url_for('main.give_advice', advice=advice))
+
 
 @main.route('/upload', methods=['POST'])
 def upload_json():
-    import json
-
     if 'jsonfile' not in request.files:
         return {"error": "No file part"}, 400
     
     file = request.files['jsonfile']
-
-    db.session.query(Health).delete()
-
-    db.session.commit()
-
+    
+    user_id = session.get('id')
+    
     if file.filename == '':
         return {"error": "No selected file"}, 400
 
@@ -333,42 +409,92 @@ def upload_json():
         activity = json_data.get("activity", {})
         calories_data = activity.get("calories", [])
         steps_data = activity.get("steps", [])
-
         heart_rate_data = json_data.get("heartRate", [])
 
+        # Премахване на старите данни на потребителя преди да добавим новите
+        user_health_data = Health.query.filter_by(userid=user_id).all()
+        for data in user_health_data:
+            db.session.delete(data)
+
+        # Добавяне на новите данни в базата
         for entry in calories_data:
             date = datetime.strptime(entry["date"], "%Y-%m-%d")
             calories = entry["calories"]
 
+            # Извличане на съответните стъпки за същата дата
             steps = next((s["steps"] for s in steps_data if s["date"] == entry["date"]), 0)
 
+            # Извличане на среден пулс за същата дата
             hr_entry = next((h for h in heart_rate_data if h["date"] == entry["date"]), None)
+            avg_hr = hr_entry.get("average", 0.0) if hr_entry else 0
 
-            if hr_entry:
-                avg_hr = hr_entry.get("average", 0.0)
+            # Проверка дали съществува запис с тази дата
+            existing_record = Health.query.filter_by(userid=user_id, date=date).first()
+
+            if existing_record:
+                # Ако съществува запис, актуализираме данните
+                existing_record.steps = steps
+                existing_record.heartrate = avg_hr
+                existing_record.calories = calories
             else:
-                avg_hr = 0
-
-            health_record = Health(
-                userid=session['id'],
-                date=date,
-                steps=steps,
-                heartrate=avg_hr,
-                calories=calories
-            )
-
-            db.session.add(health_record)
+                # Ако не съществува запис, създаваме нов
+                health_record = Health(
+                    userid=user_id,
+                    date=date,
+                    steps=steps,
+                    heartrate=avg_hr,
+                    calories=calories
+                )
+                db.session.add(health_record)
 
         db.session.commit()
-    
-        user = User.query.filter_by(id=session['id']).first()
+
+        # Вземане на информация за потребителя
+        user = User.query.filter_by(id=user_id).first()
         name = user.firstname
         if user.profilepic and user.profilepic != "static/images/profile.jpg":
             picadres = user.profilepic.replace('static/','')
         else:
             picadres = 'images/profile.jpg'
-    
+
         return render_template('dashboard.html', name=name, profilepic=picadres)
 
     except Exception as e:
         return jsonify({"error": f"Грешка: {str(e)}"}), 500
+
+@main.route('/metrics', methods=['GET', 'POST'], endpoint='metrics')
+def metrics():
+    # Проверка за наличност на потребител в сесията
+    username = session.get('username')
+    if not username:
+        flash("Моля, влезте в профила си.")
+        return redirect(url_for('main.login'))
+    
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash("Потребителят не е намерен!")
+        return redirect(url_for('main.login'))
+    
+    if request.method == 'POST':
+        # Извличане на данните от формата
+        height = request.form.get('height')
+        weight = request.form.get('weight')
+        age = request.form.get('age')
+        gender = request.form.get('gender')
+        
+        try:
+            user.height = float(height)
+            user.weight = float(weight)
+            user.age = int(age)
+        except ValueError:
+            flash("Моля, въведете валидни стойности за ръст, тегло и възраст.")
+            return redirect(url_for('main.metrics'))
+        
+        user.gender = gender
+        
+        db.session.commit()
+        flash("Мерките са запазени успешно!")
+        return redirect(url_for('main.dashboard'))
+    
+    # Ако е GET заявка, рендираме формата с предварително попълнени данни от потребителя
+    return render_template('metrics.html', user=user)

@@ -4,7 +4,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>Metrics</title>
     <style>
 
         
@@ -114,62 +114,50 @@ body {
             padding: 2rem;
             text-align: center;
         }
-        .health-buttons {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
-}
 
-.health-button {
-  text-align: center;
-  text-decoration: none;
-  color: black;
-}
-
-.health-button img {
-  width: 50px;  /* Размер на иконата */
-  height: 50px;  /* Размер на иконата */
-  margin-bottom: 5px;
-}
-
-.health-button p {
-  font-size: 14px;
-  margin: 0;
-}
-
-.health-button:hover {
-  opacity: 0.8;  /* Леко намаляване на яркостта при задържане */
-}
-
-.button-text {
-    position: absolute;
-    top: 60px;  /* Разстояние от горния ръб на изображението */
-    left: 50%;  /* Центриране по хоризонтала */
-    transform: translateX(-50%);  /* Центриране на текста */
-    color: rgb(255, 255, 255);  /* Цвят на текста */
-    font-size: 30px;  /* Размер на текста */
-    font-weight: bold;  /* Тегло на шрифта */
+.container {
+    width: 500px;
+    margin: 50px auto;
+    background-color: rgb(14, 77, 81);
+    border-radius: 90px;
+    padding: 20px 30px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 50px;
+    font-size: 1.2rem;
     font-family: 'Montserrat', sans-serif;
-}
-
-.box {
+    font-weight: 700;
+    text-decoration: none;
     display: inline-block;
-    position: relative;
 }
-
-.box:nth-child(5) .button-text {
-    top: 40px;
+form {
+    display: flex;
+    flex-direction: column;
 }
-        .upload-container {
-            border:2px #023334;
-            padding: 2px;
-            width: 40%;
-            margin: auto;
-            border-radius: 30px;
-            background-color: #b05408;
-        }
-
-        .back-button {
+label {
+    margin-top: 10px;
+    font-weight: bold;
+}
+  input, select {
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  button {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  .back-button {
     position: absolute;
       /* Разстояние от горния ръб */
     left: 70px;
@@ -203,78 +191,28 @@ body {
             <span>My Profile</span>
         </div>
     </header>
-
-    <div class="upload-container">
-        <h2>Upload Your JSON Records</h2>
-        <h3 onclick="document.getElementById('jsonfile').click()">Click here to upload your records</h3>
-        
-        
-
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" id="jsonfile" name="jsonfile" accept="application/json" style="display: none;" onchange="previewJsonFile()">
-        <button type="submit">Upload</button>
-    </form>
-
+    <div class="container">
+        <h1>Enter your metrics</h1>
+        <form action="/metrics" method="POST">
+          <label for="height">HEIGHT(cm):</label>
+          <input type="number" id="height" name="height" placeholder="Enter your height in cm" value="{{ user.height if user.height is not none else '' }}">
     
-    <div class="preview-container">
-        <h3>Upload Status:</h3>
-        <pre id="uploadStatus">No file selected ❌</pre>
-    </div>
+          <label for="weight">WEIGHT(kg):</label>
+          <input type="number" id="weight" name="weight" placeholder="Enter your weight in kg" value="{{ user.weight if user.height is not none else '' }}">
     
-    <script>
-        function previewJsonFile() {
-            const fileInput = document.getElementById("jsonfile");
-            const status = document.getElementById("uploadStatus");
+          <label for="age">AGE:</label>
+          <input type="number" id="age" name="age" placeholder="Enter your age" value="{{ user.age if user.height is not none else '' }}">
     
-            if (fileInput.files.length > 0) {
-                status.textContent = "One file ready for upload ⏳";
-            }
-        }
+          <label for="gender">GENDER:</label>
+          <select id="gender" name="gender" required>
+            <option value="" disabled {% if not user.gender %}selected{% endif %}>chose gender</option>
+            <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+            <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+          </select>
     
-        document.querySelector("form").addEventListener("submit", function(event) {
-            const fileInput = document.getElementById("jsonfile");
-            const status = document.getElementById("uploadStatus");
-    
-            if (fileInput.files.length > 0) {
-                status.textContent = "One file uploaded ✅";
-                sleep(5);
-            } else {
-                status.textContent = "No file selected ❌";
-                event.preventDefault(); // Спира изпращането, ако няма файл
-            }
-        });
-    </script>
-    </div>
-
-    <script>
-        function showProfileOptions() {
-            window.location.href = "/profile";
-            // Можеш да добавиш меню или логика за пренасочване
-        }
-    </script>
-
-<footer class="footer">
-  <a href="{{ url_for('main.view_pulse_graph') }}" class="box">
-      <img src="/static/icons/pulseMy.png" alt="Heart rate" style="width: 170px; height: 170px;">
-      <span class="button-text">Pulse</span>
-  </a>
-  <a href="{{ url_for('main.view_steps_graph') }}" class="box">
-      <img src="/static/icons/stepsMy.png" alt="Steps" style="width: 155px; height: 190px;">
-      <span class="button-text">Steps</span>
-  </a>
-  <a href="{{ url_for('main.view_stress_graph') }}" class="box">
-      <img src="/static/icons/stres.png" alt="Stress" style="width: 180px; height: 210px;">
-      <span class="button-text">Stress</span>
-  </a>
-  <a href="{{ url_for('main.view_calories_graph') }}" class="box">
-      <img src="/static/icons/workouts.png" alt="Workouts" style="width: 155px; height: 190px;">
-      <span class="button-text">Calories</span>
-  </a>
-  <a href="{{ url_for('main.view_sleep_graph') }}" class="box">
-      <img src="/static/icons/sleepMy.png" alt="Sleep" style="width: 170px; height: 170px;">
-      <span class="button-text">Sleep records</span>
-  </a>
-</footer>
+          <button type="submit">SAVE</button>
+        </form>
+      </div>
 
 <a href="/startmenu" class="back-button">🡰</a>
     

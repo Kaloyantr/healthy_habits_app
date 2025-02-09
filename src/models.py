@@ -7,7 +7,7 @@ class Health(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, unique = True)
+    date = db.Column(db.DateTime, nullable=False, unique = False)
     steps = db.Column(db.Integer, default=0)
     heartrate = db.Column(db.Integer, default=0.0)
     calories = db.Column(db.Integer, default=0.0)
@@ -28,6 +28,11 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     profilepic = db.Column(db.String(200), nullable=True)
     healthinfo = relationship(Health)
+    
+    height = db.Column(db.Float, nullable=True)      # Височина (например в сантиметри или метри)
+    weight = db.Column(db.Float, nullable=True)      # Тегло (например в килограми)
+    age = db.Column(db.Integer, nullable=True)         # Години
+    gender = db.Column(db.String(10), nullable=True)
 
     def __repr__(self):
         return f'<User {self.username}>'

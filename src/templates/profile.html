@@ -90,6 +90,30 @@
    .delete_profile-button:hover {
      background-color: #e53935; /* По-тъмен червен при задържане */
     }
+    
+    .back-button {
+    position: absolute;
+      /* Разстояние от горния ръб */
+    left: 70px;
+    bottom: 10px;  /* Центриране по хоризонтала */
+    transform: translateX(-50%);  /* Центриране */
+    
+    background-color: rgba(16, 81, 94, 0.914);  /* Полупрозрачен фон */
+    color: white;  /* Бял текст */
+    font-size: 30px;  /* Размер на шрифта */
+    font-weight: bold;  /* Тегло на шрифта */
+    font-family: 'Montserrat', sans-serif;
+    
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: rgba(4, 10, 39, 0.8);  /* По-тъмен при ховър */
+}
 
   </style>
 </head>
@@ -120,5 +144,6 @@
   </form>   
     </div>
   </main>
+  <a href="/startmenu" class="back-button">🡰</a>
 </body>
 </html>

@@ -174,11 +174,16 @@ body {
     </main>
 
     <footer class="footer">
-        <a id="rect1" class="box">
+        <a href="{{ url_for('main.metrics') }}" id="rect1" class="box">
+            <span class="button-text">METRICS</span>
         </a>
-        <a id="rect2" class="box">
-            <span class="button-text">GET ADVICE</span>
+        <a id="rect2" class="box" >
+            <form action="{{ url_for('main.give_advice') }}" method="GET">
+                <button type="submit">GET ADVICE</button>
+            </form>
+            
         </a>
+        
         <a href="{{ url_for('main.dashboard') }}" id="rect3" class="box">
             <span class="button-text">DASHBOARD</span>
         </a>
@@ -189,6 +194,8 @@ body {
             window.location.href = "/profile";
         }
     </script>
+
+
 
 
 </body>
