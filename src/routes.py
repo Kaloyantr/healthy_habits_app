@@ -9,6 +9,7 @@ from datetime import datetime
 from plyer import notification
 import bcrypt
 import json
+from sqlalchemy.exc import IntegrityError
 
 main = Blueprint("main", __name__)
 
@@ -19,9 +20,6 @@ def home():
 @main.route("/register")
 def register():
     return render_template('register.html')
-
-from sqlalchemy.exc import IntegrityError
-from flask import session, redirect, url_for, flash
 
 @main.route("/register_action", methods=['POST'])
 def register_action():
@@ -72,8 +70,6 @@ def register_action():
 
     return render_template('register.html')
 
-
-
 @main.route("/login_action", methods=['POST'])
 def login_action():
     if request.method != 'POST':
@@ -98,13 +94,12 @@ def login():
 @main.route('/startmenu')
 def startmenu():
     if 'id' not in session:
-        return redirect(url_for('main.login'))  # Пренасочва към логин страницата, ако потребителят не е логнат
+        return redirect(url_for('main.login'))
 
     user = User.query.filter_by(id=session['id']).first()
     name = user.firstname
     if user.profilepic and user.profilepic != "static/images/profile.jpg":
         picadres = user.profilepic.replace('static/','')
-        #profilepic = url_for('static', profilepic = picadres)
     else:
         picadres = 'images/profile.jpg'
     
@@ -112,7 +107,7 @@ def startmenu():
 
 @main.route("/user_page")
 def user_page():
-    if not session.get("logged_in"):  # Ако няма активна сесия
+    if not session.get("logged_in"):
         return redirect(url_for("main.login")) 
     return render_template('in_app.html')
 
@@ -124,13 +119,12 @@ def logout():
 @main.route('/dashboard')
 def dashboard():
     if 'id' not in session:
-        return redirect(url_for('main.login'))  # Пренасочва към логин страницата, ако потребителят не е логнат
+        return redirect(url_for('main.login'))
 
     user = User.query.filter_by(id=session['id']).first()
     name = user.firstname
     if user.profilepic and user.profilepic != "static/images/profile.jpg":
         picadres = user.profilepic.replace('static/','')
-        #profilepic = url_for('static', profilepic = picadres)
     else:
         picadres = 'images/profile.jpg'
     
@@ -143,7 +137,6 @@ def profile():
     email = user.email
     if user.profilepic and user.profilepic != "static/images/profile.jpg":
         picadres = user.profilepic.replace('static/','')
-        #profilepic = url_for('static', profilepic = picadres)
     else:
         picadres = "images/profile.jpg"
     return render_template('profile.html', username=username, email=email, profilepic=picadres)
@@ -164,12 +157,10 @@ def editprofile():
         username = request.form.get('username')
         email = request.form.get('email')
         
-        # Проверка за задължителни полета
         if not firstname or not lastname or not email:
             flash('Моля попълнете всички полета.')
             return redirect(url_for('main.editprofile'))
 
-        # Проверка за уникалност на потребителското име
         existing_user = User.query.filter_by(username=username).first()
         if existing_user and existing_user.id != current_user.id:
             flash('Потребителското име вече съществува.')
@@ -188,7 +179,6 @@ def editprofile():
                 flash('Невалиден формат на файл. Моля качете снимка с .png, .jpg, .jpeg или .gif формат.')
                 return redirect(url_for('main.editprofile'))
         
-        # Актуализиране на данните за потребителя
         current_user.firstname = firstname
         current_user.surname = lastname
         current_user.username = username
@@ -212,37 +202,35 @@ def delete_profile():
             user_health_data = Health.query.filter_by(userid = user_id).all()
             for data in user_health_data:
                 db.session.delete(data) 
-            # Изтриваме потребителя от базата данни
             db.session.delete(current_user)
             db.session.commit()
             flash("Вашият профил беше успешно изтрит.", "success")
             
-            session.clear()  # Допълнително изчистване на сесията
-            return redirect(url_for('main.login'))  # Пренасочваме към логин страницата
+            session.clear()
+            return redirect(url_for('main.login'))
 
         except Exception as e:
-            db.session.rollback()  # В случай на грешка, връщаме промените в базата
+            db.session.rollback()
             flash(f"Грешка при изтриването на профила: {str(e)}", "danger")
-            return redirect(url_for('main.dashboard'))  # Пренасочваме обратно към dashboard
+            return redirect(url_for('main.dashboard'))
 
     else:
         flash("Не сте логнати.", "danger")
-        return redirect(url_for('main.login'))  # Пренасочваме към логин страницата, ако потребителят не е логнат
+        return redirect(url_for('main.login'))
 
 @main.route("/view_steps_graph", methods=["GET"])
 def view_steps_graph():
-    specific_user_id = session('id')
+    specific_user_id = session['id']
     
-    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
+    dates_data = db.session.query(Health.date).filter(Health.userid == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    steps_data = db.session.query(Health.steps).filter(Health.user_id == specific_user_id).all()
+    steps_data = db.session.query(Health.steps).filter(Health.userid == specific_user_id).all()
     steps_list = [int(row[0]) for row in steps_data]
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=date_list, y=steps_list, mode='lines+markers', name='Steps',line=dict(shape='hvh',color='#e8d0c1')))
 
     fig.update_layout(
-        #title=dict(text="Steps Over Time", font=dict(size=60, color='#b05408')),
         xaxis_title='Time(d)',
         yaxis_title='Steps',
         plot_bgcolor='#27403a',
@@ -251,18 +239,17 @@ def view_steps_graph():
         yaxis=dict(tickfont=dict(size = 15, color="#b05408"))
     )
 
-    # Генериране на HTML за графиката
     graph_html = fig.to_html(full_html=False)
 
     return render_template('graph.html',name = "Steps", graph_html=graph_html)
 
 @main.route("/view_pulse_graph", methods=["GET"])
 def view_pulse_graph():
-    specific_user_id = session('id')
+    specific_user_id = session['id']
     
-    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
+    dates_data = db.session.query(Health.date).filter(Health.userid == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    pulse_data = db.session.query(Health.heartrate).filter(Health.user_id == specific_user_id).all()
+    pulse_data = db.session.query(Health.heartrate).filter(Health.userid == specific_user_id).all()
     pulse_list = [int(row[0]) for row in pulse_data]
 
     fig = go.Figure()
@@ -274,18 +261,17 @@ def view_pulse_graph():
         yaxis_title='Pulse(bpm)',
     )
 
-    # Генериране на HTML за графиката
     graph_html = fig.to_html(full_html=False)
 
     return render_template('graph.html', name = 'Pulse', graph_html=graph_html)
 
 @main.route("/view_stress_graph", methods=["GET"])
 def view_stress_graph():
-    specific_user_id = session('id')
+    specific_user_id = session['id']
     
-    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
+    dates_data = db.session.query(Health.date).filter(Health.userid == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    stress_data = db.session.query(Health.stress).filter(Health.user_id == specific_user_id).all()
+    stress_data = db.session.query(Health.stress).filter(Health.userid == specific_user_id).all()
     stress_list = [int(row[0]) for row in stress_data]
 
     fig = go.Figure()
@@ -295,22 +281,21 @@ def view_stress_graph():
         title='Stress',
         xaxis_title='Time(d)',
         yaxis_title='Stress',
-        plot_bgcolor='rgba(230, 230, 250, 0.8)',  # Светло лилав фон
+        plot_bgcolor='rgba(230, 230, 250, 0.8)',
         paper_bgcolor='rgba(240, 248, 255, 0.9)',
     )
 
-    # Генериране на HTML за графиката
     graph_html = fig.to_html(full_html=False)
 
     return render_template('graph.html', name = 'Stress levels', graph_html=graph_html)
 
 @main.route("/view_calories_graph", methods=["GET"])
 def view_calories_graph():
-    specific_user_id = session('id')
+    specific_user_id = session['id']
     
-    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
+    dates_data = db.session.query(Health.date).filter(Health.userid == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    calories_data = db.session.query(Health.calories).filter(Health.user_id == specific_user_id).all()
+    calories_data = db.session.query(Health.calories).filter(Health.userid == specific_user_id).all()
     calories_list = [int(row[0]) for row in calories_data]
 
     fig = go.Figure()
@@ -329,10 +314,10 @@ def view_calories_graph():
 
 @main.route("/view_sleep_graph", methods=["GET"])
 def view_sleep_graph():
-    specific_user_id = session('id')
-    dates_data = db.session.query(Health.date).filter(Health.user_id == specific_user_id).all()
+    specific_user_id = session['id']
+    dates_data = db.session.query(Health.date).filter(Health.userid == specific_user_id).all()
     date_list = [row[0].date() for row in dates_data]
-    sleep_data = db.session.query(Health.sleephours).filter(Health.user_id == specific_user_id).all()
+    sleep_data = db.session.query(Health.sleephours).filter(Health.userid == specific_user_id).all()
     sleep_list = [int(row[0]) for row in sleep_data]
 
     fig = go.Figure()
@@ -349,47 +334,46 @@ def view_sleep_graph():
 
     return render_template('graph.html', name = 'Sleep records', graph_html=graph_html)
 
-@main.route("/give_advice", methods=["GET"])
-def give_advice():
-    user_id = session.get('id')  # Получаваме ID от сесията
+# @main.route("/give_advice", methods=["POST"])
+# def give_advice():
+#     user_id = session.get('id')  # Получаваме ID от сесията
     
-    if not user_id:
-        return "Няма данни за потребителя", 400  # Ако няма потребител в сесията
+#     if not user_id:
+#         return "Няма данни за потребителя", 400  # Ако няма потребител в сесията
     
-    user = User.query.filter_by(id=user_id).first()
+#     user = User.query.filter_by(id=user_id).first()
 
-    # Ако няма данни за потребителя
-    if not user:
-        return "Няма данни за потребителя", 400
+#     # Ако няма данни за потребителя
+#     if not user:
+#         return "Няма данни за потребителя", 400
     
-    # Получаване на данни за стъпки и калории от базата
-    steps_data = db.session.query(Health.sleephours).filter(Health.userid == user_id).all()
-    steps_list = [row[0] for row in steps_data]  # Преобразуваме резултата в списък
-    av_steps = sum(steps_list) / len(steps_list) if len(steps_list) > 0 else 0  # Средна стойност за стъпките
+#     # Получаване на данни за стъпки и калории от базата
+#     steps_data = db.session.query(Health.sleephours).filter(Health.userid == user_id).all()
+#     steps_list = [row[0] for row in steps_data]  # Преобразуваме резултата в списък
+#     av_steps = sum(steps_list) / len(steps_list) if len(steps_list) > 0 else 0  # Средна стойност за стъпките
     
-    calories_data = db.session.query(Health.calories).filter(Health.userid == user_id).all()
-    calories_list = [row[0] for row in calories_data]  # Преобразуваме резултата в списък
-    av_cal = sum(calories_list) / len(calories_list) if len(calories_list) > 0 else 0  # Средна стойност за калориите
+#     calories_data = db.session.query(Health.calories).filter(Health.userid == user_id).all()
+#     calories_list = [row[0] for row in calories_data]  # Преобразуваме резултата в списък
+#     av_cal = sum(calories_list) / len(calories_list) if len(calories_list) > 0 else 0  # Средна стойност за калориите
     
-    weight = user.weight if user.weight else 72  # По подразбиране стойност
-    height = user.height if user.height else 1.75  # По подразбиране стойност
-    age = user.age if user.age else 25  # По подразбиране стойност
+#     weight = user.weight if user.weight else 72  # По подразбиране стойност
+#     height = user.height if user.height else 1.75  # По подразбиране стойност
+#     age = user.age if user.age else 25  # По подразбиране стойност
     
-    A = (av_steps / 10000) + (av_cal / 2500)
-    BMI = weight / (height ** 2)
-    E = 100 / BMI
+#     A = (av_steps / 10000) + (av_cal / 2500)
+#     BMI = weight / (height ** 2)
+#     E = 100 / BMI
     
-    health_score = (A + E) / 2
+#     health_score = (A + E) / 2
     
-    if health_score > 80:
-        advice = "Вашето здраве е отлично! Продължавайте с активния начин на живот. Поддържайте стреса на ниско ниво и се опитайте да запазите здравословното си тегло."
-    elif 50 < health_score <= 80:
-        advice = "Здравето ви е добро, но има място за подобрения. Помислете за увеличаване на физическата активност, намаляване на стреса и подобряване на съня."
-    else:
-        advice = "Вашето здравословно състояние не е на ниво, което бихте искали. Препоръчваме ви да се консултирате с лекар за съвети, да започнете с по-здравословен начин на живот, да намалите стреса и да увеличите физическата активност."
+#     if health_score > 80:
+#         advice = "Вашето здраве е отлично! Продължавайте с активния начин на живот. Поддържайте стреса на ниско ниво и се опитайте да запазите здравословното си тегло."
+#     elif 50 < health_score <= 80:
+#         advice = "Здравето ви е добро, но има място за подобрения. Помислете за увеличаване на физическата активност, намаляване на стреса и подобряване на съня."
+#     else:
+#         advice = "Вашето здравословно състояние не е на ниво, което бихте искали. Препоръчваме ви да се консултирате с лекар за съвети, да започнете с по-здравословен начин на живот, да намалите стреса и да увеличите физическата активност."
     
-    return redirect(url_for('main.give_advice', advice=advice))
-
+#     return redirect(url_for('main.startmenu', username=session.get('username'), token='123456', advice=advice))
 
 @main.route('/upload', methods=['POST'])
 def upload_json():
@@ -411,33 +395,26 @@ def upload_json():
         steps_data = activity.get("steps", [])
         heart_rate_data = json_data.get("heartRate", [])
 
-        # Премахване на старите данни на потребителя преди да добавим новите
         user_health_data = Health.query.filter_by(userid=user_id).all()
         for data in user_health_data:
             db.session.delete(data)
 
-        # Добавяне на новите данни в базата
         for entry in calories_data:
             date = datetime.strptime(entry["date"], "%Y-%m-%d")
             calories = entry["calories"]
 
-            # Извличане на съответните стъпки за същата дата
             steps = next((s["steps"] for s in steps_data if s["date"] == entry["date"]), 0)
 
-            # Извличане на среден пулс за същата дата
             hr_entry = next((h for h in heart_rate_data if h["date"] == entry["date"]), None)
             avg_hr = hr_entry.get("average", 0.0) if hr_entry else 0
 
-            # Проверка дали съществува запис с тази дата
             existing_record = Health.query.filter_by(userid=user_id, date=date).first()
 
             if existing_record:
-                # Ако съществува запис, актуализираме данните
                 existing_record.steps = steps
                 existing_record.heartrate = avg_hr
                 existing_record.calories = calories
             else:
-                # Ако не съществува запис, създаваме нов
                 health_record = Health(
                     userid=user_id,
                     date=date,
@@ -449,7 +426,6 @@ def upload_json():
 
         db.session.commit()
 
-        # Вземане на информация за потребителя
         user = User.query.filter_by(id=user_id).first()
         name = user.firstname
         if user.profilepic and user.profilepic != "static/images/profile.jpg":
@@ -464,7 +440,6 @@ def upload_json():
 
 @main.route('/metrics', methods=['GET', 'POST'], endpoint='metrics')
 def metrics():
-    # Проверка за наличност на потребител в сесията
     username = session.get('username')
     if not username:
         flash("Моля, влезте в профила си.")
@@ -476,7 +451,6 @@ def metrics():
         return redirect(url_for('main.login'))
     
     if request.method == 'POST':
-        # Извличане на данните от формата
         height = request.form.get('height')
         weight = request.form.get('weight')
         age = request.form.get('age')
@@ -496,5 +470,4 @@ def metrics():
         flash("Мерките са запазени успешно!")
         return redirect(url_for('main.dashboard'))
     
-    # Ако е GET заявка, рендираме формата с предварително попълнени данни от потребителя
     return render_template('metrics.html', user=user)
