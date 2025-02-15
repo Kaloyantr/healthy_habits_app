@@ -12,54 +12,15 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-image: url('/static/images/background_dashboard.png'); /* Проверете пътя */
+  background-image: url('/static/images/background_dashboard.png');
   background-size: cover;
   background-repeat: no-repeat;
-  background-position: center top; /* Позиционира изображението по-надолу */
+  background-position: center top;
   color: #ffffff;
   text-align: center;
-  font-weight: bold;  /* Тегло на шрифта */
+  font-weight: bold;
   font-family: 'Montserrat', sans-serif;
 }
-        .footer {
-      display: flex;
-      justify-content: center;/* Центриране хоризонтално */
-      align-items: center;
-      width: 97.5%;
-      padding: 20px;
-      position: fixed;
-      bottom: 0;
-      left: 100;
-    }
-    /* Стил за бутоните (правоъгълниците) */
-    .footer .box {
-        
-      /* Ако искаш фиксирана или минимална ширина, можеш да зададеш и това */
-      min-width: 170px;
-      margin: 0 11px;  /* Разстояние между бутоните */
-      text-align: center;
-      padding: 10rem 2rem;
-      height: 40px;
-      color: rgb(226, 247, 252);
-      background-color: #05787a;
-      border-radius: 50px;
-      font-size: 1.2rem;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .footer .box:hover {
-      background-color: #0ab0b3;
-    }
-    
-    #rect1 {
-    width: 500px;
-    height: 300px;
-    top: -35px;
-    left: 120px;
-}
-
         header {
             background-color: #05787a;
             color: white;
@@ -159,15 +120,14 @@ label {
   }
   .back-button {
     position: absolute;
-      /* Разстояние от горния ръб */
     left: 70px;
-    bottom: 10px;  /* Центриране по хоризонтала */
-    transform: translateX(-50%);  /* Центриране */
+    bottom: 10px;
+    transform: translateX(-50%);
     
-    background-color: rgba(16, 81, 94, 0.914);  /* Полупрозрачен фон */
-    color: white;  /* Бял текст */
-    font-size: 30px;  /* Размер на шрифта */
-    font-weight: bold;  /* Тегло на шрифта */
+    background-color: rgba(16, 81, 94, 0.914);
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
     font-family: 'Montserrat', sans-serif;
     
     border: none;
@@ -178,7 +138,7 @@ label {
 }
 
 .back-button:hover {
-    background-color: rgba(4, 10, 39, 0.8);  /* По-тъмен при ховър */
+    background-color: rgba(4, 10, 39, 0.8);
 }
 
     </style>
@@ -198,10 +158,10 @@ label {
           <input type="number" id="height" name="height" placeholder="Enter your height in cm" value="{{ user.height if user.height is not none else '' }}">
     
           <label for="weight">WEIGHT(kg):</label>
-          <input type="number" id="weight" name="weight" placeholder="Enter your weight in kg" value="{{ user.weight if user.height is not none else '' }}">
+          <input type="number" id="weight" name="weight" placeholder="Enter your weight in kg" value="{{ user.weight if user.weight is not none else '' }}">
     
           <label for="age">AGE:</label>
-          <input type="number" id="age" name="age" placeholder="Enter your age" value="{{ user.age if user.height is not none else '' }}">
+          <input type="number" id="age" name="age" placeholder="Enter your age" value="{{ user.age if user.age is not none else '' }}">
     
           <label for="gender">GENDER:</label>
           <select id="gender" name="gender" required>

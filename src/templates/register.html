@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Healthy Habits</title>
@@ -9,63 +10,54 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        .container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
+            background-image: url('/static/images/background_dashboard.png'); /* Проверете пътя */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center top; /* Позиционира изображението по-надолу */
+            color: #ffffff;
             text-align: center;
-            color: #4caf50;
+            font-weight: bold;  /* Тегло на шрифта */
+            font-family: 'Montserrat', sans-serif;
         }
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        label {
-            font-weight: bold;
-        }
-        input {
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        input:focus {
-            border-color: #4caf50;
-            outline: none;
-        }
-        button {
-            padding: 10px;
-            font-size: 1rem;
-            background-color: #4caf50;
+        header {
+            background-color: #05787a;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
         }
-        button:hover {
-            background-color: #45a049;
+        header h1 {
+            margin: 0px;
+            left: 100px;
+            font-size: 1.8rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
         }
-        .back-link {
+        main h3 {
+            padding:0.4rem;
+            margin-top:30px;
+            border-radius: 1555px;
+            color: rgba(222, 83, 23);
+            font-size: 3rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+        main h2 {
+            padding-top: 50px;
+            background-color: rgba(222, 83, 23, 0.8);
+            margin:0px;
+            border-radius: 1555px;
+            color: #ffffff;
+            font-size: 3rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+        main {
+            padding: 2rem;
             text-align: center;
-            margin-top: 10px;
         }
-        .back-link a {
-            color: #4caf50;
-            text-decoration: none;
-        }
-        .back-link a:hover {
-            text-decoration: underline;
-        }
+        
         .alert {
             padding: 15px;
             margin-bottom: 20px;
@@ -84,11 +76,86 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        .container {
+            width: 500px;
+            margin: 50px auto;
+            background-color: rgb(14, 77, 81);
+            border-radius: 90px;
+            padding: 20px 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-button {
+            position: absolute;
+              /* Разстояние от горния ръб */
+            left: 70px;
+            bottom: 10px;  /* Центриране по хоризонтала */
+            transform: translateX(-50%);  /* Центриране */
+            
+            background-color: rgba(16, 81, 94, 0.914);  /* Полупрозрачен фон */
+            color: white;  /* Бял текст */
+            font-size: 30px;  /* Размер на шрифта */
+            font-weight: bold;  /* Тегло на шрифта */
+            font-family: 'Montserrat', sans-serif;
+            
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(4, 10, 39, 0.8);  /* По-тъмен при ховър */
+        }
+        
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Register</h1>
+
+        {% if session.get('message') %}
+        <div class="alert {% if session['message']['type'] == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            {{ session['message']['text'] }}
+        </div>
+        {% set _ = session.pop('message') %}
+    {% endif %}
+    
+
         <form action="/register_action" method="POST">
             <label for="firstname">First name:</label>
             <input type="text" id="firstname" name="firstname" required>
@@ -105,11 +172,10 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
 
-            <button type="submit">Register</button>
+            <button type="submit">REGISTER</button>
         </form>
-        <div class="back-link">
-            <a href="/">Back to Home</a>
-        </div>
     </div>
+
+    <a href="/" class="back-button">🡰</a>
 </body>
 </html>

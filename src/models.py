@@ -18,12 +18,11 @@ These models interact with the database using SQLAlchemy, with the `Health` mode
 linked to the `User` model through a foreign key relationship.
 """
 from src import db
-from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
 
 class Health(db.Model):
     """
-    Represents a user's health data, including steps, heart rate, calories,
+    Represents a user"s health data, including steps, heart rate, calories,
     stress level, and sleep hours for a given date.
 
     Attributes:
@@ -39,7 +38,7 @@ class Health(db.Model):
     __tablename__ = "health_data"
 
     id = db.Column(db.Integer, primary_key=True)
-    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    userid = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     steps = db.Column(db.Integer, default=0)
     heartrate = db.Column(db.Integer, default=0)
@@ -63,17 +62,17 @@ class User(db.Model):
 
     Attributes:
         id (int): The primary key for the user.
-        username (str): The user's unique username.
-        email (str): The user's unique email address.
-        firstname (str): The user's first name.
-        surname (str): The user's last name.
+        username (str): The user"s unique username.
+        email (str): The user"s unique email address.
+        firstname (str): The user"s first name.
+        surname (str): The user"s last name.
         password (str): The hashed password for the user.
-        profilepic (str): The URL to the user's profile picture.
-        height (float): The user's height in meters or centimeters.
-        weight (float): The user's weight in kilograms.
-        age (int): The user's age.
-        gender (str): The user's gender.
-        healthinfo (relationship): The relationship to the Health table, containing the user's health data.
+        profilepic (str): The URL to the user"s profile picture.
+        height (float): The user"s height in meters or centimeters.
+        weight (float): The user"s weight in kilograms.
+        age (int): The user"s age.
+        gender (str): The user"s gender.
+        healthinfo (relationship): The relationship to the Health table, containing the user"s health data.
     """
     __tablename__ = "users"
 
@@ -96,6 +95,6 @@ class User(db.Model):
         Returns a string representation of the User.
 
         Returns:
-            str: A string representation of the user's username.
+            str: A string representation of the user"s username.
         """
-        return f'<User {self.username}>'
+        return f"<User {self.username}>"
