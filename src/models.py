@@ -82,7 +82,7 @@ class User(db.Model):
     firstname = db.Column(db.String(80), nullable=False)
     surname = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(100), nullable=False)
-    profilepic = db.Column(db.String(200), nullable=True)
+    profilepic = db.Column(db.String(200), nullable=True, default="static/images/profile.png")
     healthinfo = relationship(Health)
 
     height = db.Column(db.Float, nullable=True)

@@ -124,20 +124,18 @@
   <main>
     <div class="profile-container">
       <div class="profile-picture">
-        <!-- Използваме profile_pic за динамично задаване на пътя към снимката -->
-        <img src="{{ url_for('static', filename=profilepic) }}" alt="Профилна снимка">
+        <img src="{{ profilepic }}"  alt="Profile Icon">
       </div>
       <div class="profile-details">
         <h2>{{ username }}</h2>
         <p>Email: {{ email }}</p>
-        <!-- Можеш да добавиш и други данни, ако е необходимо -->
       </div>
       <div class="edit-profile">
         <a href="{{ url_for('main.editprofile') }}">Edit profile</a>
       </div>
       <div class="logout">
         <a href="{{ url_for('main.logout') }}" class="logout-button">Log out</a>
-      </div>   
+      </div>
     </div>
     <form action="{{ url_for('main.delete_profile') }}" method="POST">
       <button type="submit" class="delete-profile-button">Delete Profile</button>

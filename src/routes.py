@@ -33,7 +33,6 @@ def register_action():
         password = request.form["password"].encode("utf-8")
         firstname = request.form["firstname"]
         surname = request.form["surname"]
-        profilepic = "static/images/profile.jpg"
         
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password, salt)
@@ -46,7 +45,7 @@ def register_action():
                 session["message"] = {"text": "Email already exists", "type": "error"}
             return redirect(url_for("main.register"))
 
-        new_user = User(username=username, email=email, firstname=firstname, surname=surname, password=hashed_password, profilepic=profilepic)
+        new_user = User(username=username, email=email, firstname=firstname, surname=surname, password=hashed_password)
 
         try:
             db.session.add(new_user)
@@ -89,11 +88,9 @@ def startmenu():
 
     user = User.query.filter_by(id=session["id"]).first()
     name = user.firstname
-    if user.profilepic and user.profilepic != "static/images/profile.jpg":
-        picadres = user.profilepic.replace("static/","")
-    else:
-        picadres = "images/profile.jpg"
-    
+
+    picadres = user.profilepic if user.profilepic else "static/images/profile.jpg"
+
     return render_template("startmenu.html", name=name, profilepic=picadres)
 
 @main.route("/logout")
@@ -120,10 +117,10 @@ def profile():
     user = User.query.filter_by(username=session.get("username")).first()
     username = user.username
     email = user.email
-    if user.profilepic and user.profilepic != "static/images/profile.jpg":
-        picadres = user.profilepic.replace("static/","")
+    if user.profilepic:
+        picadres = user.profilepic
     else:
-        picadres = "images/profile.jpg"
+        picadres = "static/images/profile.jpg"
     return render_template("profile.html", username=username, email=email, profilepic=picadres)
 
 @main.route("/editprofile", methods=["GET", "POST"])
@@ -161,9 +158,14 @@ def editprofile():
                 file.save(upload_path)
                 profile_pic_path = url_for("static", filename="uploads/" + filename)
             else:
-                flash("Not correct format.Please upload a .png, .jpg, .jpeg или .gif format.")
+                flash("Not correct format.Please upload a .png, .jpg, .jpeg or .gif format.")
                 return redirect(url_for("main.editprofile"))
-        
+            
+        if current_user.profilepic != "static/images/profile.png":
+            old_pic_path = os.path.join(current_app.root_path, current_user.profilepic)
+            if os.path.exists(old_pic_path):
+                os.remove(old_pic_path)
+
         current_user.firstname = firstname
         current_user.surname = lastname
         current_user.username = username
@@ -462,5 +464,6 @@ def metrics():
         
         db.session.commit()
         return redirect(url_for("main.startmenu"))
+    profilepic = user.profilepic
     
-    return render_template("metrics.html", user=user)
+    return render_template("metrics.html", user=user, profilepic = profilepic)
